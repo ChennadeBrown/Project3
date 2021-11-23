@@ -9,21 +9,45 @@ library(tree)
 library(rpart)
 library(rattle)
 library(tidyverse)
-employData <- read_csv("EmployeeAttrition.csv")
+library(ggplot2)
+library(data.table)
 
+# Read in the data.
+# Set file name for data.
+dataFile <- "./HR-Employee-Attrition.csv"
+dataFile
+
+employData <- read_csv(dataFile)
+employData
+
+
+
+
+
+# Clean Data.
+# Remove non predictor variables from the data set.
+employData$EmployeeCount <- NULL
+employData$EmployeeNumber <- NULL
+employData$StandardHours <- NULL
+
+# Convert Attrition to a factor.
+#employData %>% 
+#mutate(
+#Attrition = as.factor(Attrition))
+
+not_sel <- "Not Selected"
 
 
 shinyUI(fluidPage(
-  headerPanel(title = "Predicting Employee Attrition"),
+  titlePanel("Employee Attrition"),
   sidebarLayout(
     sidebarPanel(
-      h4("Select Categorical Numeric or Summary Variables:"),
-      # Create select boxes.
-      selectInput("catVariable", label = "Categorical Predictors", selected = "Gender", choices = catVars),
-      selectInput("numericVariables",label = "Numeric Predictors", selected = "Age", choices = numericVars),
-      selectInput("tableVars", label= "Summary Variables", selected = "Avg_Age", choices = sumTab),
-      # Radio buttons for user input.
-      radioButtons("plot", "Select the Type of Summary", choices = list("Bar Plot" = "bar", "Scatterplot" = "scatter"), selected = "bar")
+      # Create widgets.
+      h4("Choose variables with the select boxes below."),
+      selectInput("numVarOne", "Numeric Variable One", choices=c(not_sel)),
+      selectInput("numVarTwo", "Numeric Variable Two", choices = c(not_sel)),
+      selectInput("factVars", "Categorical Variable", choices = c(not_sel)),
+      actionButton("run_button", "Run Analysis", icon = icon("play")),
     ),
     mainPanel(
       # Show output and create tabs.
@@ -35,8 +59,7 @@ shinyUI(fluidPage(
                              tabPanel("Modeling Info"),
                              tabPanel("Model Fitting"),
                              tabPanel("Prediction"))),
-                  tabPanel("Data")
-      )
+                  tabPanel("Data"))
     )
   ))
 )
