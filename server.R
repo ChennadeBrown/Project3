@@ -32,12 +32,28 @@ employData$StandardHours <- NULL
 
 not_sel <- "Not Selected"
 
+# Scatterplot & Barplot functions.
+draw_plotOne <- function(getData, numVarOne, numVarTwo, factVars){
+  if(numVarOne != not_sel &
+     numVarTwo != not_sel &
+     factVars != not_sel){
+    ggplot(data = getData,
+           aes_string(x = numVarOne, y = numVarTwo,
+                      color = factVars)) +
+      geom_point()}
+  else if(numVarOne == not_sel & 
+          numVarTwo == not_sel & 
+          factVars != not_sel){
+    ggplot(data = getData,
+           aes_string(x = factVars)) +
+      geom_bar()
+  }}
 
 shinyServer(function(input, output) {
   
   #get numeric columns.
   getData <- reactive({
-    newDataN <- select_if(employData, is.numeric)
+    newDataN <- select_if(employData, is.numeric) %>% mutate(Attrition = as.factor(employData$Attrition), BusinessTravel = as.factor(employData$BusinessTravel), Department = as.factor(employData$Department), EducationField = as.factor(employData$EducationField), Gender = as.factor(employData$Gender), JobRole = as.factor(employData$JobRole), MaritalStatus = as.factor(employData$MaritalStatus), Over18 = as.factor(employData$Over18), OverTime = as.factor(employData$OverTime))
     newDataN
   })
   
@@ -59,9 +75,31 @@ shinyServer(function(input, output) {
     choices <- c(not_sel, names(getData2()))
     updateSelectInput(inputId = "factVars", choices = choices)
   })
+  
+  #Reactive function for Run button to control output.
+  numVarOne <- eventReactive(input$runButton, input$numVarOne)
+  numVarTwo <- eventReactive(input$runButton, input$numVarTwo)
+  factVars <- eventReactive(input$runButton, input$factVars)
+  
+  
+  
+  # Create the plot object.
+  plotOne <- eventReactive(input$runButton,{
+    draw_plotOne(getData(), numVarOne(), numVarTwo(), factVars())
+  })
+  
+  # Render plot.
+  output$plotOne <- renderPlot(plotOne())
+  
+  
+  
+  
+  
+  # Create table.
+  
+  
+  
 })
-
-
 
 
 

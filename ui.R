@@ -21,9 +21,6 @@ employData <- read_csv(dataFile)
 employData
 
 
-
-
-
 # Clean Data.
 # Remove non predictor variables from the data set.
 employData$EmployeeCount <- NULL
@@ -38,6 +35,9 @@ employData$StandardHours <- NULL
 not_sel <- "Not Selected"
 
 
+
+
+
 shinyUI(fluidPage(
   titlePanel("Employee Attrition"),
   sidebarLayout(
@@ -47,13 +47,15 @@ shinyUI(fluidPage(
       selectInput("numVarOne", "Numeric Variable One", choices=c(not_sel)),
       selectInput("numVarTwo", "Numeric Variable Two", choices = c(not_sel)),
       selectInput("factVars", "Categorical Variable", choices = c(not_sel)),
-      actionButton("run_button", "Run Analysis", icon = icon("play")),
+      radioButtons("plot", "Select the Type of Plot/Summary", choices = list("Bar Plot" = "bar", "Scatterplot" = "scatter", "Table" = "table"), selected = "bar"),
+      h5("Select three variables for scatter plots and one categorical variable for box plots and push play to produce plots."),
+      actionButton("runButton", "Run Analysis", icon = icon("play")),
     ),
     mainPanel(
       # Show output and create tabs.
       tabsetPanel(type = "tab",
                   tabPanel("About"),
-                  tabPanel("Data Exploration", plotOutput("attritionplots"), dataTableOutput("summary")),
+                  tabPanel("Data Exploration", plotOutput("plotOne"), dataTableOutput("summary")),
                   tabPanel("Modeling",
                            tabsetPanel(
                              tabPanel("Modeling Info"),
