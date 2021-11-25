@@ -49,6 +49,8 @@ draw_plotOne <- function(getData, numVarOne, numVarTwo, factVars){
       geom_bar()
   }}
 
+
+
 shinyServer(function(input, output) {
   
   #get numeric columns.
@@ -88,18 +90,44 @@ shinyServer(function(input, output) {
     draw_plotOne(getData(), numVarOne(), numVarTwo(), factVars())
   })
   
-  # Render plot.
+  # Render plots.
   output$plotOne <- renderPlot(plotOne())
   
   
   
   
   
-  # Create table.
-  # Create table.
+  # Create table
+  
+  # Get numeric variables and group variable (attrition) for table select input box.
+  tableData <- employData %>% select(Attrition,Gender, Age, DailyRate, DistanceFromHome, HourlyRate, MonthlyIncome, MonthlyRate, NumCompaniesWorked, PercentSalaryHike, TotalWorkingYears, YearsWithCurrManager, TrainingTimesLastYear, YearsAtCompany, YearsInCurrentRole, YearsSinceLastPromotion)
+  as.data.frame(tableData)
+  
+  
+  
+  # Subset table values by attrition.
+  summary <- reactive({
+    if(input$stats == "Attrition"){
+      req(input$sumVars)
+      tableData %>%
+        group_by(Attrition) %>% 
+        summarise(mean = round(mean(!!sym(input$sumVars)),1), `st. dev` = 
+                    round(sd(!!sym(input$sumVars)),1), min = min(!!sym(input$sumVars)), max = max(!!sym(input$sumVars)))} 
+    else if(input$stats == "Gender"){
+      req(input$sumVars)
+      tableData %>% 
+        group_by(Gender) %>%
+        summarise(mean = round(mean(!!sym(input$sumVars)),1), `st. dev` = 
+                    round(sd(!!sym(input$sumVars)),1), min = min(!!sym(input$sumVars)), max = max(!!sym(input$sumVars)))
+    }
+  })
+  # Print table.
+  output$summary <- renderDataTable({(summary())})
+  
   
   
 })
 
 
 
+#comment
