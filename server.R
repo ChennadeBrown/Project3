@@ -40,18 +40,18 @@ draw_plotOne <- function(getData, numVarOne, numVarTwo, factVars){
     ggplot(data = getData,
            aes_string(x = numVarOne, y = numVarTwo,
                       color = factVars)) +
-      geom_point()}
+      geom_point() + ggtitle("Scatterplot")}
   else if(numVarOne == not_sel & 
           numVarTwo == not_sel & 
           factVars != not_sel){
     ggplot(data = getData,
            aes_string(x = factVars)) +
-      geom_bar()
+      geom_bar() + ggtitle("Distribution of Variables")
   }}
 
 
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   #get numeric columns.
   getData <- reactive({
@@ -98,7 +98,6 @@ shinyServer(function(input, output) {
   
   
   # Create table
-  
   # Get numeric variables and group variable (attrition) for table select input box.
   tableData <- employData %>% select(Attrition,Gender, Age, DailyRate, DistanceFromHome, HourlyRate, MonthlyIncome, MonthlyRate, NumCompaniesWorked, PercentSalaryHike, TotalWorkingYears, YearsWithCurrManager, TrainingTimesLastYear, YearsAtCompany, YearsInCurrentRole, YearsSinceLastPromotion)
   as.data.frame(tableData)
@@ -125,9 +124,57 @@ shinyServer(function(input, output) {
   output$summary <- renderDataTable({(summary())})
   
   
+  #Prepare data for data table.
+  
+  # Select selected columns & rows.
+  updateSelectizeInput(session, "Columns",
+                       server = TRUE,
+                       choices = colnames(employData),
+                       selected = colnames(employData[1:5]))
+  
+  updateSelectizeInput(session, "Rows",
+                       server = TRUE,
+                       choices = unique(employData$Age),
+                       selected = 49)
+  
+  # Output data table.
+  output$DataSet <- renderDataTable({
+    
+    # Filter the data set.
+    employData %>% 
+      select(input$Columns) %>%
+      filter(employData == input$Rows)
+  })
+  
+  # Allow user to download the filtered dataset.
+  output$downloadFile <- downloadHandler(
+    filename = function(){
+      paste("data.csv")},
+    content = function(con){
+      write.csv(employData %>% 
+                  select(input$Columns) %>%
+                  filter(employData == input$Rows),
+                con,
+                row.names = FALSE)}
+  ) 
+  
+  # Info for modeling Page.
+  # Mathematical formula for Logistic Regression.
+  
+  output$logEq <- renderUI({
+    withMathJax(
+      helpText(
+        "$$\\log(\\frac{p}{\\1-p} = \\beta_0 + \\beta_1(var)}$$"))
+  })
   
 })
 
 
 
-#comment
+
+
+
+
+
+
+# comment
