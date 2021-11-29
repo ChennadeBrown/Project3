@@ -3,7 +3,6 @@ library(caret)
 library(tidyverse)
 library(DT)
 library(knitr)
-library(GGally)
 library(dplyr)
 library(caret)
 library(tree)
@@ -25,10 +24,6 @@ employData$EmployeeCount <- NULL
 employData$EmployeeNumber <- NULL
 employData$StandardHours <- NULL
 
-# Convert Attrition to a factor.
-#employData %>% 
-#mutate(
-#Attrition = as.factor(Attrition))
 
 not_sel <- "Not Selected"
 
@@ -167,7 +162,157 @@ shinyServer(function(input, output, session) {
         "$$\\log(\\frac{p}{\\1-p} = \\beta_0 + \\beta_1(var)}$$"))
   })
   
-})
+  
+  # Prepare data for modeling.
+  
+  # Update levels of categorical variables to numeric.
+  employData2 <- employData %>% mutate(Attrition = if_else(Attrition == "No", "0", "1"))
+  employData2 <-employData2 %>% mutate(BusinessTravel = if_else(BusinessTravel == "Non-Travel", "1", if_else(BusinessTravel == "Travel_Frequently", "2", "3")))
+  employData2 <- employData2 %>% mutate(Department = if_else(Department == "Sales", "3", if_else(Department == "Research & Development", "2", "1")))
+  employData2 <- employData2 %>% mutate(EducationField = if_else(EducationField == "Human Resources", "1", if_else(EducationField == "Life Sciences", "2", if_else(EducationField == "Marketing", "3", if_else(EducationField == "Medical", "4", if_else(EducationField == "Other", "5", "6"))))))
+  employData2 <- employData2 %>% mutate(Gender = if_else(Gender == "Female", "1", "0"))
+  employData2 <- employData2 %>% mutate(JobRole = if_else(JobRole == "Healthcare Representative", "1", if_else(JobRole == "Human Resources", "2", if_else(JobRole == "Laboratory Technician", "3", if_else(JobRole == "Manager", "4", if_else(JobRole == "Manufacturing Director", "5", if_else(JobRole == "Research Director", "6", if_else(JobRole == "Research Scientist", "7", if_else(JobRole == "Sales Executive", "8", "9")))))))))
+  employData2 <- employData2 %>% mutate(MaritalStatus = if_else(MaritalStatus == "Divorced", "1", if_else(MaritalStatus == "Married", "2", "3")))
+  employData2 <- employData2 %>% mutate(OverTime = if_else(OverTime =="No", "1", "2"))
+  
+  #Remove over18 column.
+  employData2$Over18 <- NULL
+  employData2
+  
+  # Store columns to be changed to numeric in an object.
+  i <- c(3, 5, 8, 10, 14, 16, 20)
+  
+  #Change character variables to numeric for modeling.
+  employData2[, c(3,5,8,10,14,16,20)] <- sapply(employData2[, c(3,5,8,10,14,16,20)], as.numeric)
+  
+  # Change Attrition back to a factor.
+  employData2$Attrition <- as.factor(employData2$Attrition)
+  
+  
+  
+  #Reorder columns.
+  employData2 <- employData2[,c(2, 1, 4, 3, 5:31)]
+  
+  
+  
+  #Fit models on the training data.
+  
+  observeEvent(input$modelFit, {
+    
+    # Create a Progress object
+    progress <- Progress$new()
+    
+    # Make sure it closes when we exit this reactive, even if there's an error
+    on.exit(progress$close())
+    
+    #Display message to user while models are running.
+    progress$set(message = "Models Running", value = 0)
+    
+    
+    #Store variables for each model in objects.
+    logVars <- input$logVars
+    classVars <- input$classVars
+    forestVars <- input$forestVars
+    
+    #Store model parameters in objects.
+    setSeed <- input$setSeed
+    dataProps <- input$dataProps
+    cvFolds <- input$cvFolds
+    
+    #Store random forest parameter mtry in an object.
+    selMtry <- input$selMtry
+    
+    
+    #Use inputs to set the random seed.
+    set.seed(setSeed)
+    
+    #Store train/testing indexes in an object to split data into training and test sets.
+    trainSetInd <- sample(seq_len(nrow(employData2)),
+                          size=floor(nrow(employData2)*dataProps))
+    
+    #Split data into a training and test set based on user input.
+    employTrain <- employData2[trainSetInd,]
+    employTest <- employData2[-trainSetInd,]
+    
+    #Ignore warnings from caret during cross validation.
+    suppressWarnings(library(caret))
+    
+    
+    # Store cross validation parameters in an object.
+    trCtrl <- trainControl(
+      method = "cv",
+      number = cvFolds
+    )
+    
+    # Run logistic regression model.
+    
+    
+    # Increment the progress bar, and update the detail text.
+    progress$inc(0.3, detail = "Logistic Regression Model")
+    
+    logisticModel <- train(Attrition ~ .,
+                           data = employTrain[, c(c("Attrition"),logVars)],
+                           method = "glm",
+                           family = "binomial",
+                           metric = "Accuracy",
+                           trControl = trCtrl)
+    
+    
+    # Increment the progress bar, and update the detail text.
+    progress$inc(0.5, detail = "Tree Model")
+    
+    
+    # Run Classification Tree Model.
+    treeModel <- train(Attrition ~ .,
+                       data = employTrain[, c(c("Attrition"), classVars)],
+                       method = "rpart",
+                       cp = 0.001,
+                       metric = "Accuracy",
+                       trControl = trCtrl)
+    
+    # Increment the progress bar, and update the detail text.
+    progress$inc(0.7, detail = "Random Forest Model")
+    
+    #Run Random Forest Model.  Removed cross validation as it is causing a warning message.
+    rfFit <- train(Attrition ~ .,
+                   data = employTrain[,c(c("Attrition"), forestVars)],
+                   method = "rf",
+                   metric = "Accuracy")
+    #tuneGrid = expand.grid(mtry = selMtry))
+    #trControl = trCtrl)
+    
+    
+    # Increment the progress bar, and update the detail text.
+    progress$inc(0.8, detail = "Review model performance on the training set")
+    
+    #Logistic Regression Accuracy. 
+    output$accuracy <- renderDataTable({
+      
+      fitStats <- (t(as.matrix(logisticModel$results)))
+      fitStats
+      
+      colnames(fitStats) <- c("Logistic Regression")
+      fitStats
+    })
+    
+    #Logistic Regression Summararies.  This is not working.
+    #output$logisticSum <- renderPlot({
+    #summary.glm((logisticModel),coef)
+  })
+  
+  # Get Predictions on the training data.
+  #logisticPred <- predict(logisticModel, test, type = "raw")
+  #classTreePred <- predict(treeModel, test, type = "raw")
+  #rfPred <- predict(rfFit, test, type = "raw")
+  
+  
+}
+
+
+
+
+
+) 
 
 
 
@@ -177,4 +322,13 @@ shinyServer(function(input, output, session) {
 
 
 
-# comment
+
+
+
+
+
+
+
+
+
+
