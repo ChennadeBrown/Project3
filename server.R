@@ -6,9 +6,8 @@ library(knitr)
 library(dplyr)
 library(caret)
 library(tree)
-library(rpart)
-library(rattle)
 library(ggplot2)
+library(party)
 
 # Read in the data.
 # Set file name for data.
@@ -265,10 +264,10 @@ shinyServer(function(input, output, session) {
     # Run Classification Tree Model.
     treeModel <- train(Attrition ~ .,
                        data = employTrain[, c(c("Attrition"), classVars)],
-                       method = "rpart",
-                       cp = 0.001,
+                       method = "ctree2",
                        metric = "Accuracy",
-                       trControl = trCtrl)
+                       trControl = trCtrl,
+                       tuneGrid = expand.grid(maxdepth = 3, mincriterion = 0.95))
     
     # Increment the progress bar, and update the detail text.
     progress$inc(0.7, detail = "Random Forest Model")
@@ -283,7 +282,7 @@ shinyServer(function(input, output, session) {
     
     
     # Increment the progress bar, and update the detail text.
-    progress$inc(0.8, detail = "Review model performance on the training set")
+    progress$inc(1, detail = "Review model performance on the training set")
     
     #Logistic Regression Accuracy. 
     output$accuracy <- renderDataTable({
@@ -295,24 +294,45 @@ shinyServer(function(input, output, session) {
       fitStats
     })
     
-    #Logistic Regression Summararies.  This is not working.
-    #output$logisticSum <- renderPlot({
-    #summary.glm((logisticModel),coef)
+    #Logistic Summary (doesn't work)  
+    #output$logisticSum <- renderPrint({
+    #attFit <- glm(Attrition ~ logVars, 
+    #data = employTrain[2:31], 
+    #family = "binomial")
+    #})
+    
+    #This doesn't work either.  
+    #output$logisticSum <- renderPrint({
+    #summary(logisticModel)
+    #})
+    
+    #Classification Tree Accuracy.
+    output$treeAccuracy <- renderDataTable({
+      
+      treeAcc <- print(treeModel)
+      
+      printTreeSummary <- as.data.frame(treeAcc)
+      printTreeSummary
+    })  
+    
+    
+    #Output tree plot.
+    output$treePlot <- renderPlot({
+      treeFrame <- plot(treeModel$finalModel)
+      treeFrame
+      
+      
+    })
+    
+    
+    
   })
   
-  # Get Predictions on the training data.
-  #logisticPred <- predict(logisticModel, test, type = "raw")
-  #classTreePred <- predict(treeModel, test, type = "raw")
-  #rfPred <- predict(rfFit, test, type = "raw")
-  
-  
-}
+})
 
 
 
 
-
-) 
 
 
 

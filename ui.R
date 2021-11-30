@@ -10,6 +10,7 @@ library(rattle)
 library(tidyverse)
 library(ggplot2)
 library(data.table)
+library(party)
 
 suppressWarnings(library(caret))
 
@@ -90,7 +91,6 @@ shinyUI(fluidPage(
     sidebarPanel(
       # Create widgets.
       h4(strong("Data Exploration Tab")),
-      h5("Select three variables for scatter plots and one categorical               variable for box plots and push play to produce plots."),
       selectInput("numVarOne", "Numeric Variable One", choices=c(not_sel)),
       selectInput("numVarTwo", "Numeric Variable Two", choices = c(not_sel)),
       selectInput("factVars", "Categorical Variable", choices = c(not_sel)),
@@ -102,13 +102,13 @@ shinyUI(fluidPage(
       #Widgets to allow user to choose model settings..
       numericInput("setSeed",
                    "Set Random Seed",
-                   value = 1,
+                   value = 50,
                    min = 1,
                    max = 100,
                    step = 1),
       numericInput("dataProps",
                    "Choose Proportion of data to include in the training set.",
-                   value = 0.10,
+                   value = 0.70,
                    min = 0.10,
                    max = 0.90,
                    step = 0.10),
@@ -116,7 +116,7 @@ shinyUI(fluidPage(
       numericInput(
         "cvFolds",
         "Choose No. of Folds",
-        value = 2,
+        value = 5,
         min = 2,
         max = 8,
         step = 1,
@@ -134,7 +134,7 @@ shinyUI(fluidPage(
         "classVars",
         "Choose Predictors:",
         choices = colnames(employData2)[2:31],
-        selected = c("Age", "DailyRate", "Gender"),
+        selected = c("Age", "DailyRate", "Gender", "DistanceFromHome"),
         multiple = TRUE,
         selectize = TRUE),
       h5("Choose Random Forest Parameters"),
@@ -199,7 +199,7 @@ shinyUI(fluidPage(
                            )
                   ),
                   # Create tabs for separate pages.
-                  tabPanel("Data Exploration", plotOutput("plotOne"),                                  dataTableOutput("summary")),
+                  tabPanel("Data Exploration", "Select three variables for scatter plots and one categorical variable for box plots and push play to produce plots.", plotOutput("plotOne"),                                  dataTableOutput("summary")),
                   tabPanel("Modeling",
                            tabsetPanel(
                              tabPanel("Modeling Info",
@@ -222,12 +222,12 @@ shinyUI(fluidPage(
                                       "Random Forest models are an extension of the",                             "tree based method bagging.  The random forest",                             "algorithm creates multiple trees from",                                   "bootstrapped samples, includes a random subset",                          "of predictors in each tree, and predicts based",                            "on the average of the results from those trees.",                        "Random forests can be used for classification and",                        "regression problems.  Advantages of using Random",                           "Forest models include better accuracy than other",                         "classification algorithms, lower risk of",                                  "overfitting, and random forests models perform",                           "well on non-linear data.  Disadvantages of the",                            "random forest model include slow training, bias",                          "when dealing with categorical variables, and the",                         "loss of interpretability when compared to dealing",                          "with a single decision tree."),
                              tabPanel("Model Fitting",
                                       #Report accuracy and summaries on the training data
-                                      h3("Fit Statistics on the Training Data"),
+                                      h3("Accuracy on the Logistic Regression Model"),
                                       dataTableOutput("accuracy"),
                                       br(),
-                                      # Summary on the logistic regression model.
-                                      h3("Summary on Logistic Regression Model"),
-                                      plotOutput("logisticSum"),
+                                      #Accuracy on the tree model.
+                                      h3("Accuracy on the Tree Model"),
+                                      dataTableOutput("treeAccuracy"),
                                       br(),
                                       # Output the tree plot.
                                       h3("Tree Plot"),
