@@ -132,7 +132,7 @@ shinyUI(fluidPage(
         "classVars",
         "Choose Predictors:",
         choices = colnames(employData2)[2:31],
-        selected = c("Age", "DailyRate", "Gender", "DistanceFromHome"),
+        selected = c("Age", "DailyRate", "Gender", "DistanceFromHome", "PercentSalaryHike", "HourlyRate", "JobInvolvement"),
         multiple = TRUE,
         selectize = TRUE),
       h5("Choose Random Forest Parameters"),
@@ -220,13 +220,15 @@ shinyUI(fluidPage(
                                       "Random Forest models are an extension of the",                             "tree based method bagging.  The random forest",                             "algorithm creates multiple trees from",                                   "bootstrapped samples, includes a random subset",                          "of predictors in each tree, and predicts based",                            "on the average of the results from those trees.",                        "Random forests can be used for classification and",                        "regression problems.  Advantages of using Random",                           "Forest models include better accuracy than other",                         "classification algorithms, lower risk of",                                  "overfitting, and random forests models perform",                           "well on non-linear data.  Disadvantages of the",                            "random forest model include slow training, bias",                          "when dealing with categorical variables, and the",                         "loss of interpretability when compared to dealing",                          "with a single decision tree."),
                              tabPanel("Model Fitting",
                                       #Report accuracy and summaries on the training data
-                                      h3("Accuracy on the Logistic Regression Model"),
+                                      h3("Logistic Regression Model Fit Statistics"),
                                       dataTableOutput("accuracy"),
                                       br(),
                                       #Accuracy on the tree model.
-                                      h3("Accuracy on the Tree Model"),
+                                      h3("Classification Tree Fit Statistics"),
                                       dataTableOutput("treeAccuracy"),
                                       br(),
+                                      h3("Random Forest Fit Statistics"),
+                                      dataTableOutput("RanForAcc"),
                                       # Output the tree plot.
                                       h3("Tree Plot"),
                                       plotOutput("treePlot"),
