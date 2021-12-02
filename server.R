@@ -8,6 +8,7 @@ library(caret)
 library(tree)
 library(ggplot2)
 library(party)
+library(ranger)
 
 
 # Read in the data.
@@ -220,7 +221,7 @@ shinyServer(function(input, output, session) {
     cvFolds <- input$cvFolds
     
     #Store random forest parameter mtry in an object.
-    selMtry <- input$selMtry
+    #selMtry <- input$selMtry
     
     
     #Use inputs to set the random seed.
@@ -258,6 +259,8 @@ shinyServer(function(input, output, session) {
                            trControl = trCtrl)
     
     
+    
+    
     # Increment the progress bar, and update the detail text.
     progress$inc(0.5, detail = "Tree Model")
     
@@ -278,7 +281,7 @@ shinyServer(function(input, output, session) {
                    data = employTrain[,c(c("Attrition"), forestVars)],
                    method = "rf",
                    metric = "Accuracy")
-    #tuneGrid = expand.grid(mtry = selMtry))
+    #tuneGrid = expand.grid(mtry = selMtry)
     #trControl = trCtrl)
     
     
@@ -308,6 +311,8 @@ shinyServer(function(input, output, session) {
     #logRegSums
     #})
     
+    
+    
     #Classification Tree Accuracy.
     output$treeAccuracy <- renderDataTable({
       
@@ -336,10 +341,30 @@ shinyServer(function(input, output, session) {
       forrestPlot
     })
     
+    #Compare models on the test set and report fit statistics.
+    #Logistic Regression:
+    logTest <- confusionMatrix(data = employTest$Attrition, reference = predict(logisticModel, newdata = employTest))
+    logTest
+    logTest$overall[[1]]
     
+    #Classification Tree:
+    cTreeTest <- confusionMatrix(data = employTest$Attrition, reference = predict(treeModel, newdata = employTest))
+    cTreeTest  
+    
+    #Random Forest:
+    predForest <- predict(rfFit, newdata = employTest)
+    predRf <- postResample(predForest, employTest$Attrition)
+    predRf
+    
+    #Store test fit statistics in a table.    
+    output$testFitStatz <- renderDataTable({
+      comparisons <- round(t(rbind(logTest$overall[1], cTreeTest$overall[1], predRf[1])),4)
+      colnames(comparisons) <- c("Logistic Regression", "Classification Tree", "Random Forest")
+      comparisons
+    })
   })
   
-  
+  # Prediction Tab.
   
 })
 
