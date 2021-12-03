@@ -41,8 +41,8 @@ draw_plotOne <- function(getData, numVarOne, numVarTwo, factVars){
           numVarTwo == not_sel & 
           factVars != not_sel){
     ggplot(data = getData,
-           aes_string(x = factVars)) +
-      geom_bar() + ggtitle("Distribution of Variables")
+           aes_string(x = factVars, fill = factVars)) +
+      geom_bar() + ggtitle("Distribution of Variables") 
   }}
 
 
@@ -171,7 +171,7 @@ shinyServer(function(input, output, session) {
   employData2 <-employData2 %>% mutate(BusinessTravel = if_else(BusinessTravel == "Non-Travel", "1", if_else(BusinessTravel == "Travel_Frequently", "2", "3")))
   employData2 <- employData2 %>% mutate(Department = if_else(Department == "Sales", "3", if_else(Department == "Research & Development", "2", "1")))
   employData2 <- employData2 %>% mutate(EducationField = if_else(EducationField == "Human Resources", "1", if_else(EducationField == "Life Sciences", "2", if_else(EducationField == "Marketing", "3", if_else(EducationField == "Medical", "4", if_else(EducationField == "Other", "5", "6"))))))
-  employData2 <- employData2 %>% mutate(Gender = if_else(Gender == "Female", "1", "0"))
+  employData2 <- employData2 %>% mutate(Gender = if_else(Gender == "Female", "1", "2"))
   employData2 <- employData2 %>% mutate(JobRole = if_else(JobRole == "Healthcare Representative", "1", if_else(JobRole == "Human Resources", "2", if_else(JobRole == "Laboratory Technician", "3", if_else(JobRole == "Manager", "4", if_else(JobRole == "Manufacturing Director", "5", if_else(JobRole == "Research Director", "6", if_else(JobRole == "Research Scientist", "7", if_else(JobRole == "Sales Executive", "8", "9")))))))))
   employData2 <- employData2 %>% mutate(MaritalStatus = if_else(MaritalStatus == "Divorced", "1", if_else(MaritalStatus == "Married", "2", "3")))
   employData2 <- employData2 %>% mutate(OverTime = if_else(OverTime =="No", "1", "2"))
@@ -305,13 +305,6 @@ shinyServer(function(input, output, session) {
     #family = "binomial")
     #})
     
-    #This doesn't work either.  
-    #output$logisticSums <- renderPlot({
-    #logRegSums <- summary(logisticModel$Coefficients)
-    #logRegSums
-    #})
-    
-    
     
     #Classification Tree Accuracy.
     output$treeAccuracy <- renderDataTable({
@@ -365,6 +358,55 @@ shinyServer(function(input, output, session) {
   })
   
   # Prediction Tab.
+  
+  #Prepared data for predicting for prediction tab.
+  #Select Attrition from employData and change to a factor.
+  predData <- employData
+  
+  #Change Categorical predictors to factors for modeling.
+  predData$BusinessTravel <- as.factor(predData$BusinessTravel)
+  predData$Department <- as.factor(predData$Department)
+  predData$EducationField <- as.factor(predData$EducationField)
+  predData$Gender <- as.factor(predData$Gender)
+  predData$JobRole <- as.factor(predData$JobRole)
+  predData$MaritalStatus <- as.factor(predData$MaritalStatus)
+  predData$OverTime <- as.factor(predData$OverTime)
+  
+  #Change Attrition to a binary variable.
+  predData <- predData %>% mutate(Attrition = ifelse(Attrition == "No", "0", "1"))
+  
+  #Change Attrition to a factor for prediction.
+  predData$Attrition <- as.factor(predData$Attrition)
+  predData
+  
+  #Remove over 18 column.
+  predData$Over18 <- NULL
+  predData
+  
+  
+  
+  
+  
+  
+  observeEvent(input$predict, {
+    #Fit model.
+    glmFit <- glm(Attrition ~ MaritalStatus + BusinessTravel + Department, data = predData, family = "binomial")
+    glmFit
+    
+    #Predict with the model.
+    predictionObject <- predict(glmFit, newdata = data.frame(MaritalStatus = c(input$marValues),
+                                                             Department = c(input$departValues), 
+                                                             BusinessTravel = c(input$busValues)), se.fit = TRUE)
+    
+    #Output fit statistics.
+    output$predOutput <- renderPrint({
+      print(predictionObject)
+    })
+    
+  })
+  
+  
+  
   
 })
 

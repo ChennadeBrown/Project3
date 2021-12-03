@@ -54,7 +54,7 @@ employData2 <- employData %>% mutate(Attrition = if_else(Attrition == "No", "0",
 employData2 <-employData2 %>% mutate(BusinessTravel = if_else(BusinessTravel == "Non-Travel", "1", if_else(BusinessTravel == "Travel_Frequently", "2", "3")))
 employData2 <- employData2 %>% mutate(Department = if_else(Department == "Sales", "3", if_else(Department == "Research & Development", "2", "1")))
 employData2 <- employData2 %>% mutate(EducationField = if_else(EducationField == "Human Resources", "1", if_else(EducationField == "Life Sciences", "2", if_else(EducationField == "Marketing", "3", if_else(EducationField == "Medical", "4", if_else(EducationField == "Other", "5", "6"))))))
-employData2 <- employData2 %>% mutate(Gender = if_else(Gender == "Female", "1", "0"))
+employData2 <- employData2 %>% mutate(Gender = if_else(Gender == "Female", "1", "2"))
 employData2 <- employData2 %>% mutate(JobRole = if_else(JobRole == "Healthcare Representative", "1", if_else(JobRole == "Human Resources", "2", if_else(JobRole == "Laboratory Technician", "3", if_else(JobRole == "Manager", "4", if_else(JobRole == "Manufacturing Director", "5", if_else(JobRole == "Research Director", "6", if_else(JobRole == "Research Scientist", "7", if_else(JobRole == "Sales Executive", "8", "9")))))))))
 employData2 <- employData2 %>% mutate(MaritalStatus = if_else(MaritalStatus == "Divorced", "1", if_else(MaritalStatus == "Married", "2", "3")))
 employData2 <- employData2 %>% mutate(OverTime = if_else(OverTime =="No", "1", "2"))
@@ -78,6 +78,34 @@ employData2 <- employData2[,c(2, 1, 4, 3, 5:31)]
 
 
 
+#Prepared data for predicting for prediction tab.
+#Select Attrition from employData and change to a factor.
+predData <- employData
+
+#Change Categorical predictors to factors for modeling.
+predData$BusinessTravel <- as.factor(predData$BusinessTravel)
+predData$Department <- as.factor(predData$Department)
+predData$EducationField <- as.factor(predData$EducationField)
+predData$Gender <- as.factor(predData$Gender)
+predData$JobRole <- as.factor(predData$JobRole)
+predData$MaritalStatus <- as.factor(predData$MaritalStatus)
+predData$OverTime <- as.factor(predData$OverTime)
+
+#Change Attrition to a binary variable.
+predData <- predData %>% mutate(Attrition = ifelse(Attrition == "No", "0", "1"))
+
+#Change Attrition to a factor for prediction.
+predData$Attrition <- as.factor(predData$Attrition)
+predData
+
+#Remove over 18 column.
+predData$Over18 <- NULL
+predData
+
+
+
+
+
 
 
 
@@ -85,6 +113,7 @@ employData2 <- employData2[,c(2, 1, 4, 3, 5:31)]
 
 shinyUI(fluidPage(
   titlePanel("Employee Attrition"),
+  withMathJax(),
   sidebarLayout(
     sidebarPanel(
       # Create widgets.
@@ -119,27 +148,24 @@ shinyUI(fluidPage(
         max = 8,
         step = 1
       ),
-      h5("Choose Logistic Regression Model Parameters:"),
       #Select variables to use in the model.
       selectInput( "logVars",
-                   "Choose Predictors:",
+                   "Choose Predictors for Logistic Regression Model:",
                    choices = colnames(employData2)[2:31],
-                   selected = c("Age", "DailyRate", "Gender"),
+                   selected = c("Age", "DailyRate", "Gender", "Department"),
                    multiple = TRUE,
                    selectize = TRUE),
-      h5("Choose Classification Tree Parameters:"),
       selectInput(
         "classVars",
-        "Choose Predictors:",
+        "Choose Predictors for Classification Tree:",
         choices = colnames(employData2)[2:31],
-        selected = c("Age", "DailyRate", "Gender", "DistanceFromHome", "PercentSalaryHike", "HourlyRate", "JobInvolvement"),
+        selected = c("Age", "DailyRate", "Gender", "Department"),
         multiple = TRUE,
         selectize = TRUE),
-      h5("Choose Random Forest Parameters"),
       selectInput( "forestVars",
-                   "Choose Predictors",
+                   "Choose Predictors for Random Forest Model:",
                    choices = colnames(employData2)[2:31],
-                   selected = c("Age", "DailyRate", "Gender"),
+                   selected = c("Age", "DailyRate", "Gender", "Department"),
                    multiple = TRUE,
                    selectize = TRUE),
       # Choose tuning parameters.
@@ -152,9 +178,23 @@ shinyUI(fluidPage(
       actionButton("modelFit", 
                    "Run Models"),
       h4(strong("Prediction Tab")),
-      radioButtons("modelSelection",
-                   "Select Model for Prediction",
-                   choices = c("None Selected" = "", "Logistic Regression")),
+      selectInput("marValues",
+                  "Choose Values",
+                  choices = unique(predData$MaritalStatus),
+                  multiple = TRUE,
+                  selected = "Single"),
+      selectInput("departValues",
+                  "Choose Values:",
+                  choices = unique(predData$Department),
+                  multiple = TRUE,
+                  selected = "Sales"),
+      selectInput("busValues",
+                  "Choose Values:",
+                  choices = unique(predData$BusinessTravel),
+                  multiple = TRUE,
+                  selected = "Non-Travel"),
+      actionButton("predict",
+                   "Prediction"),
       h4(strong("Data Tab")),
       h5("Select column(s) and age row to filter the data set."),
       selectizeInput("Columns",
@@ -181,7 +221,7 @@ shinyUI(fluidPage(
                            "This app helps identify the factors that lead to employee attrition by exploring questions such as comparing monthly income by education and attrition.",
                            h3("Data Set"),
                            "The data set is a fictional data set created by IBM Data Scientist.  The data set presents an employee survey from IBM indicating if there is attrition or not.",
-                           "The data set includes variables related to attrition and employee performance such as Age,Department, Hourly Rate, etc.",
+                           "The data set includes variables related to attrition and employee performance such as Age, Department, Hourly Rate, etc.",
                            "The data set was downloaded from Kaggle", a(href = hrDataLink, "here"),".",
                            h3("Tabs"),
                            tags$ul(
@@ -203,19 +243,19 @@ shinyUI(fluidPage(
                                       "This section will include the use of classification models to predict if an employee is likely to quit which could be valuable to HR departments since it would allow them the ability to resolve the situation and prevent attrition.",
                                       h4("Logistic Regression"),
                                       "Generalized linear models can have continuous and categorical predictors.",
-                                      "A logistic regression model is a type of generalized model which will",    "be used to predict Employee Attrition.",
+                                      "A logistic regression model is a type of generalized model.  A logistic", "regression model will be used to predict Employee Attrition.",
                                       "A logistic regression model is used to model the probability of a certain","class or event such as success/failure.",
                                       "A logistic regression model uses a logistic function to model a binary",   "response variable.",
-                                      "Benefits of logistic regression models include:ease of implementation, easy to update, greater accuracy, and can easily extend to multiple classes.",
+                                      "Benefits of logistic regression models include:ease of implementation, easy to update, greater accuracy, and the ability to easily extend to multiple classes.",
                                       "Cons of logistic regression include: the possibility of overfitting with high dimensional data sets which could lead to inaccurate results on the test set, inability to solve non-linear problems, difficulty capturing complex relationships,and tedious data preparation.",
                                       "The logistic regression model formula is:",
                                       uiOutput("logEq"),
                                       br(),
                                       h4("Classification Tree"),
-                                      "A classification tree is a type of decision tree that uses a categorical", "binary response variable which has two levels, (ex. yes or,no or 1 or 0).",
+                                      "A classification tree is a type of decision tree that uses a categorical", "binary response variable which has two levels (ex. yes or no or 1 or 0).",
                                       "Classification trees can be used for classification predictive modeling", "problems.",
                                       "Classification trees use tree based methods for prediction which involves", "splitting up your predictor spaces, splitting the spaces into regions, and", "developing predictions based off those regions.",
-                                      "The most prevalent", "class for a region is usually used for prediction.", "Benefits of classification trees include being very easy to read, no",     "need to scale predictors, and statistical assumptions are not necessary.", "Drawbacks of using classification trees are that they don't really perform", "that well for predictive purposes, small changes in the data can have an", "impact on the tree, and trees usually need to be pruned.",
+                                      "The most prevalent", "class for a region is usually used for prediction.", "Benefits of classification trees include being very easy to read, no",     "need to scale predictors, and no need for statistical assumptions.", "Drawbacks of using classification trees are that they don't really perform", "that well for predictive purposes, small changes in the data can have an", "impact on the tree, and trees usually need to be pruned.",
                                       br(),
                                       br(),
                                       h4("Random Forest Models"),
@@ -223,6 +263,8 @@ shinyUI(fluidPage(
                                       "Disadvantages of the random forest model include slow training, bias",     "when dealing with categorical variables, and the loss of interpretability", "when compared to dealing with a single decision tree."),
                              tabPanel("Model Fitting",
                                       #Report accuracy and summaries on the training data
+                                      h5("Choose model settings and variables for each model by accessing the modeling tab section on the sidebar panel."),
+                                      verbatimTextOutput("logisticSums"),
                                       h4("Logistic Regression Fit Statistics on Training Data"),
                                       dataTableOutput("accuracy"),
                                       br(),
@@ -242,7 +284,10 @@ shinyUI(fluidPage(
                                       h4("Model Fit Statistics on the Test Data"),
                                       dataTableOutput("testFitStatz")
                              ),
-                             tabPanel("Prediction"))),
+                             tabPanel("Prediction",
+                                      h5("Predict the probability of Attrition for given values of Marital Status, Business Travel, & Department."),
+                                      h5("Choose values by accessing the prediction section of the sidebar panel then push the prediction button."),
+                                      verbatimTextOutput("predOutput")))),
                   tabPanel("Data",                              dataTableOutput("DataSet")
                   ))) 
     
