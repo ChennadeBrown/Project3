@@ -10,16 +10,14 @@ library(ggplot2)
 library(data.table)
 library(party)
 
-suppressWarnings(library(caret))
 
-# Read in the data.
-# Set file name for data.
-dataFile <- "./HR-Employee-Attrition.csv"
-dataFile
 
-employData <- read_csv(dataFile)
+# Get data.
+dataSetAttr <- "./HR-Employee-Attrition.csv"
+dataSetAttr
+
+employData <- read_csv(dataSetAttr)
 employData
-
 
 # Clean Data.
 # Remove non predictor variables from the data set.
@@ -27,7 +25,7 @@ employData$EmployeeCount <- NULL
 employData$EmployeeNumber <- NULL
 employData$StandardHours <- NULL
 
-
+#Create variable for input boxes.
 not_sel <- "Not Selected"
 
 # Data for summary tables.
@@ -78,8 +76,7 @@ employData2 <- employData2[,c(2, 1, 4, 3, 5:31)]
 
 
 
-#Prepared data for predicting for prediction tab.
-#Select Attrition from employData and change to a factor.
+#Prepare data for predicting for prediction tab.
 predData <- employData
 
 #Change Categorical predictors to factors for modeling.
@@ -96,16 +93,10 @@ predData <- predData %>% mutate(Attrition = ifelse(Attrition == "No", "0", "1"))
 
 #Change Attrition to a factor for prediction.
 predData$Attrition <- as.factor(predData$Attrition)
-predData
+
 
 #Remove over 18 column.
 predData$Over18 <- NULL
-predData
-
-
-
-
-
 
 
 
@@ -133,7 +124,7 @@ shinyUI(fluidPage(
                    min = 1,
                    max = 100,
                    step = 1),
-      numericInput("dataProps",
+      numericInput("dataPart",
                    "Choose Proportion of data to include in the training set.",
                    value = 0.70,
                    min = 0.10,
@@ -240,6 +231,7 @@ shinyUI(fluidPage(
                   tabPanel("Modeling",
                            tabsetPanel(
                              tabPanel("Modeling Info",
+                                      br(),
                                       "This section will include the use of classification models to predict if an employee is likely to quit which could be valuable to HR departments since it would allow them the ability to resolve the situation and prevent attrition.",
                                       h4("Logistic Regression"),
                                       "Generalized linear models can have continuous and categorical predictors.",

@@ -8,15 +8,14 @@ library(caret)
 library(tree)
 library(ggplot2)
 library(party)
-library(ranger)
 
 
-# Read in the data.
-# Set file name for data.
-dataFile <- "./HR-Employee-Attrition.csv"
-dataFile
 
-employData <- read_csv(dataFile)
+# Get data.
+dataSetAttr <- "./HR-Employee-Attrition.csv"
+dataSetAttr
+
+employData <- read_csv(dataSetAttr)
 employData
 
 # Clean Data.
@@ -25,7 +24,7 @@ employData$EmployeeCount <- NULL
 employData$EmployeeNumber <- NULL
 employData$StandardHours <- NULL
 
-
+#Create variables for input boxes.
 not_sel <- "Not Selected"
 
 # Scatterplot & Barplot functions.
@@ -42,7 +41,8 @@ draw_plotOne <- function(getData, numVarOne, numVarTwo, factVars){
           factVars != not_sel){
     ggplot(data = getData,
            aes_string(x = factVars, fill = factVars)) +
-      geom_bar() + ggtitle("Distribution of Variables") 
+      geom_bar() + ggtitle("Distribution of Variables") +
+      theme(axis.text.x = element_text(angle = 45))
   }}
 
 
@@ -189,8 +189,6 @@ shinyServer(function(input, output, session) {
   # Change Attrition back to a factor.
   employData2$Attrition <- as.factor(employData2$Attrition)
   
-  
-  
   #Reorder columns.
   employData2 <- employData2[,c(2, 1, 4, 3, 5:31)]
   
@@ -217,7 +215,7 @@ shinyServer(function(input, output, session) {
     
     #Store model parameters in objects.
     setSeed <- input$setSeed
-    dataProps <- input$dataProps
+    dataPart <- input$dataPart
     cvFolds <- input$cvFolds
     
     #Store random forest parameter mtry in an object.
@@ -228,15 +226,13 @@ shinyServer(function(input, output, session) {
     set.seed(setSeed)
     
     #Store train/testing indexes in an object to split data into training and test sets.
-    trainSetInd <- sample(seq_len(nrow(employData2)),
-                          size=floor(nrow(employData2)*dataProps))
+    trainSetInd <- sample(1:nrow(employData2),
+                          size = nrow(employData2)*dataPart)
     
     #Split data into a training and test set based on user input.
     employTrain <- employData2[trainSetInd,]
     employTest <- employData2[-trainSetInd,]
     
-    #Ignore warnings from caret during cross validation.
-    suppressWarnings(library(caret))
     
     
     # Store cross validation parameters in an object.
@@ -359,8 +355,7 @@ shinyServer(function(input, output, session) {
   
   # Prediction Tab.
   
-  #Prepared data for predicting for prediction tab.
-  #Select Attrition from employData and change to a factor.
+  #Prepare data for predicting for prediction tab.
   predData <- employData
   
   #Change Categorical predictors to factors for modeling.
@@ -377,13 +372,10 @@ shinyServer(function(input, output, session) {
   
   #Change Attrition to a factor for prediction.
   predData$Attrition <- as.factor(predData$Attrition)
-  predData
+  
   
   #Remove over 18 column.
   predData$Over18 <- NULL
-  predData
-  
-  
   
   
   
