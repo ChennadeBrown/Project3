@@ -1,28 +1,43 @@
 ---
-title: "ReadMe"
-author: "Chennade Brown"
+title: "Project 3 - Creating a Shiny App"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Purpose of the App
+This app explores the IBM HR Analytics Employee Attrition & Performance data set.  The data set uncovers the factors that lead to employee attrition by comparing factors such as average monthly income by education and attrition or job satisfaction by job role and attrition.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Packages Required
+* caret: model training
+* shiny : build interactive web app in R
+* DT : present data frames as HTML tables
+* knitr : enables integration of R code into LaTex, HTML, and Markdown documents
+* dplyr : manipulate data in R
+* tidyverse : manipulate and reshape data in R
+* ggplot2 : create plots
+* party : conditional inference tree
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+## To install the packages run the following code:
+
+```{r}
+install.packages("caret")
+install.packages("shiny")
+install.packages("DT")
+install.packages("knitr")
+install.packages("dplyr")
+install.packages("tree")
+install.packages("tidyverse")
+install.packages("ggplot2")
+install.packages("party")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Use the following code to run the app.
+```{r}
+shiny::runGitHub("Project3", "ChennadeBrown", ref = "main")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+

@@ -4,8 +4,6 @@ library(tidyverse)
 library(DT)
 library(knitr)
 library(dplyr)
-library(caret)
-library(tree)
 library(ggplot2)
 library(party)
 
