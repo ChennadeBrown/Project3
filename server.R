@@ -218,8 +218,6 @@ shinyServer(function(input, output, session) {
     dataPart <- input$dataPart
     cvFolds <- input$cvFolds
     
-    #Store random forest parameter mtry in an object.
-    #selMtry <- input$selMtry
     
     
     #Use inputs to set the random seed.
@@ -277,8 +275,6 @@ shinyServer(function(input, output, session) {
                    data = employTrain[,c(c("Attrition"), forestVars)],
                    method = "rf",
                    metric = "Accuracy")
-    #tuneGrid = expand.grid(mtry = selMtry)
-    #trControl = trCtrl)
     
     
     # Increment the progress bar, and update the detail text.

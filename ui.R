@@ -159,13 +159,6 @@ shinyUI(fluidPage(
                    selected = c("Age", "DailyRate", "Gender", "Department"),
                    multiple = TRUE,
                    selectize = TRUE),
-      # Choose tuning parameters.
-      #selectizeInput("selMtry",
-      #"Select maximum of 10 values for mtry",
-      #choices = 1:length(colnames(employData2)[2:31]), 
-      #multiple = TRUE,
-      #selected = c(3, 6, 9),
-      #options = list(maxItems = 10)),
       actionButton("modelFit", 
                    "Run Models"),
       h4(strong("Prediction Tab")),
