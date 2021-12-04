@@ -114,8 +114,21 @@ shinyServer(function(input, output, session) {
                     round(sd(!!sym(input$sumVars)),1), min = min(!!sym(input$sumVars)), max = max(!!sym(input$sumVars)))
     }
   })
+  
+#renderUi/uiOutput in text above summary table.
+  output$tableType <- renderUI({
+    textTab <- paste("Summary Table Grouped by",input$stats)
+    h4(textTab)
+  }) 
+  
+  
+  
   # Print table.
   output$summary <- renderDataTable({(summary())})
+  
+  
+  
+  
   
   
   #Prepare data for data table.
@@ -157,8 +170,7 @@ shinyServer(function(input, output, session) {
   
   output$logEq <- renderUI({
     withMathJax(
-      helpText(
-        "$$\\log(\\frac{p}{\\1-p} = \\beta_0 + \\beta_1(var)}$$"))
+        "$$\\log(\\frac{p}{1-p}) = \\beta_0 + \\beta_1(var)$$")
   })
   
   

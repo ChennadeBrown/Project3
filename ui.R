@@ -99,7 +99,6 @@ predData$Over18 <- NULL
 
 shinyUI(fluidPage(
   titlePanel("Employee Attrition"),
-  withMathJax(),
   sidebarLayout(
     sidebarPanel(
       # Create widgets.
@@ -215,7 +214,9 @@ shinyUI(fluidPage(
                            )
                   ),
                   # Create tabs for separate pages.
-                  tabPanel("Data Exploration", "Select three variables for scatter plots and one categorical variable for box plots and push play to produce plots.", plotOutput("plotOne"),                                  dataTableOutput("summary")),
+                  tabPanel("Data Exploration", "Select three variables for scatter plots and one categorical variable for box plots and push play to produce plots.", plotOutput("plotOne"),
+                           uiOutput("tableType"),
+                           dataTableOutput("summary")),
                   tabPanel("Modeling",
                            tabsetPanel(
                              tabPanel("Modeling Info",
