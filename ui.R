@@ -96,7 +96,6 @@ predData$Over18 <- NULL
 
 
 
-
 shinyUI(fluidPage(
   titlePanel("Employee Attrition"),
   sidebarLayout(

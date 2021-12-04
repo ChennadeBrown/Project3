@@ -130,7 +130,6 @@ shinyServer(function(input, output, session) {
   
   
   
-  
   #Prepare data for data table.
   
   # Select selected columns & rows.
