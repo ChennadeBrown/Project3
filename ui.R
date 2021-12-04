@@ -7,7 +7,6 @@ library(caret)
 library(tree)
 library(tidyverse)
 library(ggplot2)
-library(data.table)
 library(party)
 
 
