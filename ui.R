@@ -42,8 +42,6 @@ aboutImage <- "happyofficeworker.png"
 hrDataLink <- "https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset"
 
 
-# Filter Rows for Data table.
-mychoices <- unique(employData)
 
 # Prepare data for modeling.
 
