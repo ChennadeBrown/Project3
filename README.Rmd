@@ -22,7 +22,7 @@ This app explores the IBM HR Analytics Employee Attrition & Performance data set
 
 ## To install the packages run the following code:
 
-```{r}
+```{r, eval = FALSE}
 install.packages("caret")
 install.packages("shiny")
 install.packages("DT")
@@ -36,7 +36,7 @@ install.packages("party")
 
 
 ## Use the following code to run the app.
-```{r}
+```{r, eval = FALSE}
 shiny::runGitHub("Project3", "ChennadeBrown", ref = "main")
 ```
 

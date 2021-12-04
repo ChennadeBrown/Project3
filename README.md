@@ -1,34 +1,41 @@
-ReadMe
+Project 3 - Creating a Shiny App
 ================
-Chennade Brown
 
-## R Markdown
+## Purpose of the App
 
-This is an R Markdown document. Markdown is a simple formatting syntax
-for authoring HTML, PDF, and MS Word documents. For more details on
-using R Markdown see <http://rmarkdown.rstudio.com>.
+This app explores the IBM HR Analytics Employee Attrition & Performance
+data set. The data set uncovers the factors that lead to employee
+attrition by comparing factors such as average monthly income by
+education and attrition or job satisfaction by job role and attrition.
 
-When you click the **Knit** button a document will be generated that
-includes both content as well as the output of any embedded R code
-chunks within the document. You can embed an R code chunk like this:
+## Packages Required
+
+-   caret: model training
+-   shiny : build interactive web app in R
+-   DT : present data frames as HTML tables
+-   knitr : enables integration of R code into LaTex, HTML, and Markdown
+    documents
+-   dplyr : manipulate data in R
+-   tidyverse : manipulate and reshape data in R
+-   ggplot2 : create plots
+-   party : conditional inference tree
+
+## To install the packages run the following code:
 
 ``` r
-summary(cars)
+install.packages("caret")
+install.packages("shiny")
+install.packages("DT")
+install.packages("knitr")
+install.packages("dplyr")
+install.packages("tree")
+install.packages("tidyverse")
+install.packages("ggplot2")
+install.packages("party")
 ```
 
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+## Use the following code to run the app.
 
-## Including Plots
-
-You can also embed plots, for example:
-
-![](README_files/figure-gfm/pressure-1.png)<!-- -->
-
-Note that the `echo = FALSE` parameter was added to the code chunk to
-prevent printing of the R code that generated the plot.
+``` r
+shiny::runGitHub("Project3", "ChennadeBrown", ref = "main")
+```
