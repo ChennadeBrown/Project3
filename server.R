@@ -256,7 +256,7 @@ shinyServer(function(input, output, session) {
     progress$inc(0.3, detail = "Logistic Regression Model")
     
     logisticModel <- train(Attrition ~ .,
-                           data = employTrain[, c(c("Attrition"),logVars)],
+                           data = employTrain[, c(c("Attrition"), logVars)],
                            method = "glm",
                            family = "binomial",
                            metric = "Accuracy",
@@ -300,12 +300,6 @@ shinyServer(function(input, output, session) {
       fitStats
     })
     
-    #Logistic Summary (doesn't work)  
-    #output$logisticSum <- renderPrint({
-    #attFit <- glm(Attrition ~ logVars, 
-    #data = employTrain[2:31], 
-    #family = "binomial")
-    #})
     
     
     #Classification Tree Accuracy.
