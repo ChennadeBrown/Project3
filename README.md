@@ -10,15 +10,15 @@ education and attrition or job satisfaction by job role and attrition.
 
 ## Packages Required
 
--   caret: model training
--   shiny : build interactive web app in R
--   DT : present data frames as HTML tables
--   knitr : enables integration of R code into LaTex, HTML, and Markdown
-    documents
--   dplyr : manipulate data in R
--   tidyverse : manipulate and reshape data in R
--   ggplot2 : create plots
--   party : conditional inference tree
+-   `caret`: model training
+-   `shiny` : build interactive web app in R
+-   `DT`: present data frames as HTML tables
+-   `knitr` : enables integration of R code into LaTex, HTML, and
+    Markdown documents
+-   `dplyr` : manipulate data in R
+-   `tidyverse` : manipulate and reshape data in R
+-   `ggplot2` : create plots
+-   `party` : conditional inference tree
 
 ## To install the packages run the following code:
 
@@ -28,7 +28,6 @@ install.packages("shiny")
 install.packages("DT")
 install.packages("knitr")
 install.packages("dplyr")
-install.packages("tree")
 install.packages("tidyverse")
 install.packages("ggplot2")
 install.packages("party")
